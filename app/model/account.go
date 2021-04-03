@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"github.com/jinzhu/gorm"
 	"regexp"
 
 	validation "github.com/go-ozzo/ozzo-validation"
@@ -11,6 +12,7 @@ import (
 
 // User is user model
 type User struct {
+	gorm.Model
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`

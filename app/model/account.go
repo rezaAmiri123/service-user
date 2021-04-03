@@ -2,13 +2,13 @@ package model
 
 import (
 	"errors"
-	"github.com/jinzhu/gorm"
 	"regexp"
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/jinzhu/gorm"
 	pb "github.com/rezaAmiri123/service-user/gen/pb"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // User is user model
@@ -54,7 +54,7 @@ func (u *User) CheckPassword(plain string) bool {
 // ProtoResponse checks user password correct
 func (u *User) ProtoResponse() *pb.UserResponse {
 	return &pb.UserResponse{
-		Email: u.Email,
+		Email:    u.Email,
 		Username: u.Username,
 	}
 }

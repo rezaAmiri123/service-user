@@ -8,6 +8,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
 	"golang.org/x/crypto/bcrypt"
+	pb "github.com/rezaAmiri123/service-user/gen/pb"
 )
 
 // User is user model
@@ -48,4 +49,12 @@ func (u *User) HashPassword() error {
 func (u *User) CheckPassword(plain string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plain))
 	return err == nil
+}
+
+// ProtoResponse checks user password correct
+func (u *User) ProtoResponse() *pb.UserResponse {
+	return &pb.UserResponse{
+		Email: u.Email,
+		Username: u.Username,
+	}
 }

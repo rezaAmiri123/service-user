@@ -12,7 +12,11 @@ import (
 )
 
 type UserHandler struct {
-	repo *repository.ORMUserRepository
+	repo repository.UserRepository
+}
+
+func NewUserHandler(repo repository.UserRepository) *UserHandler{
+	return &UserHandler{repo: repo}
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.UserResponse, error) {

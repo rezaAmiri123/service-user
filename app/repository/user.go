@@ -16,6 +16,10 @@ type ORMUserRepository struct {
 	db *gorm.DB
 }
 
+func NewORMUserRepository(db *gorm.DB) *ORMUserRepository {
+	return &ORMUserRepository{db: db}
+}
+
 // Create create a user
 func (repo *ORMUserRepository) Create(user *model.User) error {
 	return repo.db.Create(user).Error

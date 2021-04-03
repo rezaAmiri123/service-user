@@ -1,0 +1,42 @@
+syntax = "proto3";
+package user;
+option go_package = "./;proto";
+import "google/api/annotations.proto";
+import "empty.proto";
+
+service Users{
+  rpc CreateUser(CreateUserRequest) returns(UserResponse){
+    option (google.api.http) = {
+      post: "/user"
+      body: "*"
+    };
+  }
+  rpc GetUser(empty.Empty)returns(UserResponse){
+    option(google.api.http) = {
+      get: "/user"
+    };
+  }
+  rpc UpdateUser(UpdateUserRequest)returns(UserResponse){
+    option(google.api.http) = {
+      put: "/user"
+      body: "*"
+    };
+  }
+}
+
+message CreateUserRequest{
+  string username = 1;
+  string password = 2;
+  string email = 3;
+}
+
+message UpdateUserRequest{
+  string username = 1;
+  string password = 2;
+  string email = 3;
+}
+
+message UserResponse{
+  string username = 1;
+  string email = 3;
+}

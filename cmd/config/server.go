@@ -1,5 +1,9 @@
 package config
 
+type CommonConfig struct {
+	JWTSecret string `arg:"env:JWT_SECRET"`
+}
+
 type ServerConfig struct {
 	ServerAddress string `arg:"env:SERVER_ADDRESS"`
 	ServerPort    string `arg:"env:SERVER_PORT"`
@@ -22,10 +26,14 @@ type Config struct {
 	ServerConfig
 	GatewayConfig
 	DatabaseConfig
+	CommonConfig
 }
 
 func DefaultConfiguration() *Config {
 	return &Config{
+		CommonConfig: CommonConfig{
+			JWTSecret: "1234%^&*ukfykjSCFAVARBTSDN",
+		},
 		ServerConfig: ServerConfig{
 			ServerAddress: "localhost",
 			ServerPort:    "6000",

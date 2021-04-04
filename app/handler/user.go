@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
-
+	"github.com/rezaAmiri123/service-user/app/auth"
 	"github.com/rezaAmiri123/service-user/app/model"
 	"github.com/rezaAmiri123/service-user/app/repository"
 	pb "github.com/rezaAmiri123/service-user/gen/pb"
@@ -38,6 +38,25 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, status.Error(codes.Canceled, msg)
 	}
 	return u.ProtoResponse(), nil
+}
+
+// LoginUser is existing user login
+func (h *UserHandler) LoginUser(ctx context.Context,req *pb.LoginRequest) (*pb.LoginResponse, error){
+	user, err := h.repo.GetByEmail(req.GetEmail())
+	if err != nil{
+		msg := fmt.Sprintf("invalid email or password: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	if !user.CheckPassword(req.GetPassword()){
+		msg := fmt.Sprintf("invalid email or password: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	token,err := auth.GenerateToken(user.ID)
+	if err != nil{
+		msg := fmt.Sprintf("failed to create token: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	return &pb.LoginResponse{Token: token},nil
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *pb.Empty) (*pb.UserResponse, error) {

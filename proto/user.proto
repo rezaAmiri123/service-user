@@ -11,6 +11,14 @@ service Users{
       body: "*"
     };
   }
+
+  rpc LoginUser(LoginRequest) returns(LoginResponse){
+    option (google.api.http) = {
+      post: "/user/login"
+      body: "*"
+    };
+  }
+
   rpc GetUser(empty.Empty)returns(UserResponse){
     option(google.api.http) = {
       get: "/user"
@@ -30,6 +38,15 @@ message CreateUserRequest{
   string email = 3;
 }
 
+message LoginRequest{
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse{
+  string token = 1;
+}
+
 message UpdateUserRequest{
   string username = 1;
   string password = 2;
@@ -38,5 +55,5 @@ message UpdateUserRequest{
 
 message UserResponse{
   string username = 1;
-  string email = 3;
+  string email = 2;
 }

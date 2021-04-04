@@ -1,4 +1,4 @@
-.PHONY: proto
+.PHONY: proto server gateway
 proto:
 	protoc -I ./proto \
 		--go_out ./gen/pb --go_opt paths=source_relative \
@@ -6,3 +6,9 @@ proto:
 		--grpc-gateway_out ./gen/pb --grpc-gateway_opt paths=source_relative --grpc-gateway_opt logtostderr=true \
 		--openapiv2_out ./gen/swagger --openapiv2_opt logtostderr=true \
 		proto/*.proto
+
+server:
+	go run cmd/server/main.go
+
+gateway:
+	go run cmd/gateway/main.go

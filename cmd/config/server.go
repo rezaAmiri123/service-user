@@ -1,11 +1,16 @@
 package config
 
 type ServerConfig struct {
-	Port    string `arg:"env:SERVER_PORT"`
-	Address string `arg:"env:SERVER_ADDRESS"`
+	ServerAddress string `arg:"env:SERVER_ADDRESS"`
+	ServerPort    string `arg:"env:SERVER_PORT"`
 }
 
-type Database struct {
+type GatewayConfig struct {
+	GatewayAddress string `arg:"env:GATEWAY_ADDRESS"`
+	GatewayPort    string `arg:"env:GATEWAY_PORT"`
+}
+
+type DatabaseConfig struct {
 	DBType string `arg:"env:DB_TYPE"`
 	DBUser string `arg:"env:DB_USER"`
 	DBPass string `arg:"env:DB_PASSWORD"`
@@ -15,16 +20,21 @@ type Database struct {
 }
 type Config struct {
 	ServerConfig
-	Database
+	GatewayConfig
+	DatabaseConfig
 }
 
 func DefaultConfiguration() *Config {
 	return &Config{
 		ServerConfig: ServerConfig{
-			Address: "localhost",
-			Port:    "6000",
+			ServerAddress: "localhost",
+			ServerPort:    "6000",
 		},
-		Database: Database{
+		GatewayConfig: GatewayConfig{
+			GatewayAddress: "localhost",
+			GatewayPort:    "8000",
+		},
+		DatabaseConfig: DatabaseConfig{
 			DBType: "mysql",
 			DBName: "go",
 			DBUser: "go",
@@ -35,6 +45,10 @@ func DefaultConfiguration() *Config {
 	}
 }
 
-func (cfg *ServerConfig) GetAddress() string {
-	return cfg.Address + ":" + cfg.Port
+func (cfg *ServerConfig) GetServerAddress() string {
+	return cfg.ServerAddress + ":" + cfg.ServerPort
+}
+
+func (cfg *GatewayConfig) GetGatewayAddress() string {
+	return cfg.GatewayAddress + ":" + cfg.GatewayPort
 }

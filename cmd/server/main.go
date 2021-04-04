@@ -25,7 +25,7 @@ func main() {
 	model.AutoMigrate(db)
 	repo := repository.NewORMUserRepository(db)
 	h := handler.NewUserHandler(repo)
-	lis, err := net.Listen("tcp", cfg.GetAddress())
+	lis, err := net.Listen("tcp", cfg.GetServerAddress())
 	if err != nil {
 		logrus.Fatal(err.Error())
 	}
@@ -37,7 +37,7 @@ func main() {
 	)
 
 	pb.RegisterUsersServer(srv, h)
-	logrus.Infoln("server starts at ", cfg.GetAddress())
+	logrus.Infoln("server starts at ", cfg.GetServerAddress())
 
 	if err := srv.Serve(lis); err != nil {
 		logrus.Fatal(err.Error())

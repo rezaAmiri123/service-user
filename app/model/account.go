@@ -54,6 +54,7 @@ func (u *User) CheckPassword(plain string) bool {
 // ProtoResponse checks user password correct
 func (u *User) ProtoResponse() *pb.UserResponse {
 	return &pb.UserResponse{
+		Id:       uint64(u.ID),
 		Email:    u.Email,
 		Username: u.Username,
 	}

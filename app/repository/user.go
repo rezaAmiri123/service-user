@@ -27,7 +27,7 @@ func (repo *ORMUserRepository) Create(user *model.User) error {
 
 //Update update the user
 func (repo *ORMUserRepository) Update(user *model.User) error {
-	return repo.db.Model(model.User{}).Update(user).Error
+	return repo.db.Model(user).Update(user).Error
 }
 
 // GetByEmail finds a user from email

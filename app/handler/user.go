@@ -59,10 +59,60 @@ func (h *UserHandler) LoginUser(ctx context.Context,req *pb.LoginRequest) (*pb.L
 	return &pb.LoginResponse{Token: token},nil
 }
 
+// GetUser gets current user
 func (h *UserHandler) GetUser(ctx context.Context, req *pb.Empty) (*pb.UserResponse, error) {
-	return &pb.UserResponse{}, nil
+	u, err := h.getUser(ctx)
+	if err != nil{
+		return nil, err
+	}
+	return u.ProtoResponse(), nil
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserResponse, error) {
-	return &pb.UserResponse{}, nil
+	u, err := h.getUser(ctx)
+	if err != nil{
+		return nil, err
+	}
+	// update non zero-valu fields eonly
+	username := req.GetUsername()
+	if username != "" {
+		u.Username = username
+	}
+
+	email := req.GetEmail()
+	if email != "" {
+		u.Email = email
+	}
+
+	password := req.GetPassword()
+	if password != "" {
+		u.Password = password
+		u.HashPassword()
+	}
+
+	if err := u.Validate();err != nil{
+		msg := fmt.Sprintf("validation: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+
+	if err := h.repo.Update(u);err!= nil{
+		msg := fmt.Sprintf("failed to update: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	return u.ProtoResponse(), nil
+}
+
+func (h *UserHandler) getUser(ctx context.Context) (*model.User, error) {
+	userID,err := auth.GetUserID(ctx)
+	if err != nil{
+		msg := fmt.Sprintf("unauthenticated: %w", err.Error())
+		return nil, status.Error(codes.Unauthenticated, msg)
+	}
+	u ,err := h.repo.GetByID(userID)
+	if err != nil{
+		msg := fmt.Sprintf("user not found: %w", err.Error())
+		return nil, status.Error(codes.NotFound, msg)
+	}
+
+	return u, nil
 }

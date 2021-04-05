@@ -54,6 +54,7 @@ message UpdateUserRequest{
 }
 
 message UserResponse{
-  string username = 1;
-  string email = 2;
+  uint64 id = 1;
+  string username = 2;
+  string email = 3;
 }

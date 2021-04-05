@@ -212,6 +212,10 @@
     "userUserResponse": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
         "username": {
           "type": "string"
         },

@@ -22,6 +22,9 @@ type UsersClient interface {
 	LoginUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	GetUser(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*UserResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	GetProfile(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	FollowUser(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	UnFollowUser(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
 }
 
 type usersClient struct {
@@ -68,6 +71,33 @@ func (c *usersClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opt
 	return out, nil
 }
 
+func (c *usersClient) GetProfile(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, "/user.Users/GetProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) FollowUser(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, "/user.Users/FollowUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) UnFollowUser(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, "/user.Users/UnFollowUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UsersServer is the server API for Users service.
 // All implementations should embed UnimplementedUsersServer
 // for forward compatibility
@@ -76,6 +106,9 @@ type UsersServer interface {
 	LoginUser(context.Context, *LoginRequest) (*LoginResponse, error)
 	GetUser(context.Context, *Empty) (*UserResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UserResponse, error)
+	GetProfile(context.Context, *ProfileRequest) (*ProfileResponse, error)
+	FollowUser(context.Context, *FollowRequest) (*ProfileResponse, error)
+	UnFollowUser(context.Context, *FollowRequest) (*ProfileResponse, error)
 }
 
 // UnimplementedUsersServer should be embedded to have forward compatible implementations.
@@ -93,6 +126,15 @@ func (UnimplementedUsersServer) GetUser(context.Context, *Empty) (*UserResponse,
 }
 func (UnimplementedUsersServer) UpdateUser(context.Context, *UpdateUserRequest) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
+}
+func (UnimplementedUsersServer) GetProfile(context.Context, *ProfileRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
+}
+func (UnimplementedUsersServer) FollowUser(context.Context, *FollowRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FollowUser not implemented")
+}
+func (UnimplementedUsersServer) UnFollowUser(context.Context, *FollowRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnFollowUser not implemented")
 }
 
 // UnsafeUsersServer may be embedded to opt out of forward compatibility for this service.
@@ -178,6 +220,60 @@ func _Users_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Users_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).GetProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.Users/GetProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).GetProfile(ctx, req.(*ProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_FollowUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FollowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).FollowUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.Users/FollowUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).FollowUser(ctx, req.(*FollowRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_UnFollowUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FollowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).UnFollowUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.Users/UnFollowUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).UnFollowUser(ctx, req.(*FollowRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Users_ServiceDesc is the grpc.ServiceDesc for Users service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -200,6 +296,18 @@ var Users_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateUser",
 			Handler:    _Users_UpdateUser_Handler,
+		},
+		{
+			MethodName: "GetProfile",
+			Handler:    _Users_GetProfile_Handler,
+		},
+		{
+			MethodName: "FollowUser",
+			Handler:    _Users_FollowUser_Handler,
+		},
+		{
+			MethodName: "UnFollowUser",
+			Handler:    _Users_UnFollowUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

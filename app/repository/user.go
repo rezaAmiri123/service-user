@@ -10,6 +10,10 @@ type UserRepository interface {
 	Update(user *model.User) error
 	GetByEmail(email string) (*model.User, error)
 	GetByID(id uint) (*model.User, error)
+	GetByUsername(username string) (*model.User, error)
+	IsFollowing(a, b *model.User) (bool, error)
+	Follow(a,b *model.User)error
+	Unfollow(a,b *model.User)error
 }
 
 type ORMUserRepository struct {
@@ -49,4 +53,38 @@ func (repo *ORMUserRepository) GetByID(id uint) (*model.User, error) {
 		return nil, err
 	}
 	return &u, nil
+}
+
+// GetByUsername finds a user from username
+func (repo *ORMUserRepository) GetByUsername(username string) (*model.User, error) {
+	var u model.User
+	if err := repo.db.Where(model.User{Username: username}).First(&u).Error; err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+// IsFollowing returns whether user A follows user B or not
+func (repo *ORMUserRepository) IsFollowing(a, b *model.User) (bool, error) {
+	if a == nil || b == nil {
+		return false, nil
+	}
+	var count int
+	err := repo.db.Table("follows").
+		Where("from_user_id = ? AND to_user_id = ?", a.ID, b.ID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+// Follow create follow relationship to user B from user A
+func (repo *ORMUserRepository)Follow(a,b *model.User)error{
+	return repo.db.Model(a).Association("Follows").Append(b).Error
+}
+
+// Unfollow delete follow relationship to user B from user a
+func (repo *ORMUserRepository)Unfollow(a,b *model.User)error{
+	return repo.db.Model(a).Association("Follows").Delete(b).Error
 }

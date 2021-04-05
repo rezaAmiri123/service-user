@@ -17,6 +17,10 @@ type User struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
+	Bio string `json:"bio"`
+	Image string `json:"image"`
+	Follows []User `json:"follows" gorm:"many2many:follows;jointable_foreignkey:from_user_id;association_jointable_foreignkey:to_user_id"`
+	//Follows []*User `json:"follows" gorm:"many2many:follows"` // follows_id and user_id
 }
 
 // Validate validates fields of user model
@@ -51,11 +55,21 @@ func (u *User) CheckPassword(plain string) bool {
 	return err == nil
 }
 
-// ProtoResponse checks user password correct
-func (u *User) ProtoResponse() *pb.UserResponse {
+// ProtoUser return user proto
+func (u *User) ProtoUser() *pb.UserResponse {
 	return &pb.UserResponse{
 		Id:       uint64(u.ID),
 		Email:    u.Email,
 		Username: u.Username,
+	}
+}
+
+// ProtoProfile return proto profile
+func (u *User) ProtoProfile(following bool) *pb.ProfileResponse {
+	return &pb.ProfileResponse{
+		Username: u.Username,
+		Bio: u.Bio,
+		Image: u.Image,
+		Following: following,
 	}
 }

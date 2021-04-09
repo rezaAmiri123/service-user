@@ -54,7 +54,7 @@ metrics:
 jaeger:
   Host: localhost:6831
   ServiceName: Auth_GRPC
-  LogSpans: false
+  LogSpans: true
 
 Common:
   JWTSecret: 1234%^&*ukfykjSCFAVARBTSDN

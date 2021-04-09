@@ -1,19 +1,23 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/jinzhu/gorm"
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/rezaAmiri123/service-user/app/model"
 )
 
 type UserRepository interface {
-	Create(user *model.User) error
-	Update(user *model.User) error
-	GetByEmail(email string) (*model.User, error)
-	GetByID(id uint) (*model.User, error)
-	GetByUsername(username string) (*model.User, error)
-	IsFollowing(a, b *model.User) (bool, error)
-	Follow(a,b *model.User)error
-	Unfollow(a,b *model.User)error
+	Create(ctx context.Context, user *model.User) error
+	Update(ctx context.Context, user *model.User) error
+	GetByEmail(ctx context.Context, email string) (*model.User, error)
+	GetByID(ctx context.Context, id uint) (*model.User, error)
+	GetByUsername(ctx context.Context, username string) (*model.User, error)
+	IsFollowing(ctx context.Context, a, b *model.User) (bool, error)
+	Follow(ctx context.Context, a, b *model.User) error
+	Unfollow(ctx context.Context, a, b *model.User) error
 }
 
 type ORMUserRepository struct {
@@ -25,17 +29,26 @@ func NewORMUserRepository(db *gorm.DB) *ORMUserRepository {
 }
 
 // Create create a user
-func (repo *ORMUserRepository) Create(user *model.User) error {
+func (repo *ORMUserRepository) Create(ctx context.Context, user *model.User) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.Create")
+	defer span.Finish()
+
 	return repo.db.Create(user).Error
 }
 
 //Update update the user
-func (repo *ORMUserRepository) Update(user *model.User) error {
+func (repo *ORMUserRepository) Update(ctx context.Context, user *model.User) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.Update")
+	defer span.Finish()
+
 	return repo.db.Model(user).Update(user).Error
 }
 
 // GetByEmail finds a user from email
-func (repo *ORMUserRepository) GetByEmail(email string) (*model.User, error) {
+func (repo *ORMUserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.GetByEmail")
+	defer span.Finish()
+
 	var u model.User
 	err := repo.db.Where(model.User{
 		Email: email,
@@ -47,7 +60,10 @@ func (repo *ORMUserRepository) GetByEmail(email string) (*model.User, error) {
 }
 
 // GetByID finds a user from id
-func (repo *ORMUserRepository) GetByID(id uint) (*model.User, error) {
+func (repo *ORMUserRepository) GetByID(ctx context.Context, id uint) (*model.User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.GetByID")
+	defer span.Finish()
+
 	var u model.User
 	if err := repo.db.Find(&u, id).Error; err != nil {
 		return nil, err
@@ -56,7 +72,10 @@ func (repo *ORMUserRepository) GetByID(id uint) (*model.User, error) {
 }
 
 // GetByUsername finds a user from username
-func (repo *ORMUserRepository) GetByUsername(username string) (*model.User, error) {
+func (repo *ORMUserRepository) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.GetByUsername")
+	defer span.Finish()
+
 	var u model.User
 	if err := repo.db.Where(model.User{Username: username}).First(&u).Error; err != nil {
 		return nil, err
@@ -65,7 +84,10 @@ func (repo *ORMUserRepository) GetByUsername(username string) (*model.User, erro
 }
 
 // IsFollowing returns whether user A follows user B or not
-func (repo *ORMUserRepository) IsFollowing(a, b *model.User) (bool, error) {
+func (repo *ORMUserRepository) IsFollowing(ctx context.Context, a, b *model.User) (bool, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.IsFollowing")
+	defer span.Finish()
+
 	if a == nil || b == nil {
 		return false, nil
 	}
@@ -80,11 +102,17 @@ func (repo *ORMUserRepository) IsFollowing(a, b *model.User) (bool, error) {
 }
 
 // Follow create follow relationship to user B from user A
-func (repo *ORMUserRepository)Follow(a,b *model.User)error{
+func (repo *ORMUserRepository) Follow(ctx context.Context, a, b *model.User) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.Follow")
+	defer span.Finish()
+
 	return repo.db.Model(a).Association("Follows").Append(b).Error
 }
 
 // Unfollow delete follow relationship to user B from user a
-func (repo *ORMUserRepository)Unfollow(a,b *model.User)error{
+func (repo *ORMUserRepository) Unfollow(ctx context.Context, a, b *model.User) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.Unfollow")
+	defer span.Finish()
+
 	return repo.db.Model(a).Association("Follows").Delete(b).Error
 }

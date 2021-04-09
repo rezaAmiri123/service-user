@@ -41,7 +41,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		msg := fmt.Sprintf("failed to hash password: %w", err.Error())
 		return nil, status.Error(codes.Aborted, msg)
 	}
-	if err := h.repo.Create(u); err != nil {
+	if err := h.repo.Create(ctx, u); err != nil {
 		msg := fmt.Sprintf("failed to create user: %w", err.Error())
 		return nil, status.Error(codes.Canceled, msg)
 	}
@@ -53,7 +53,7 @@ func (h *UserHandler) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.
 	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Login")
 	defer span.Finish()
 
-	user, err := h.repo.GetByEmail(req.GetEmail())
+	user, err := h.repo.GetByEmail(ctx, req.GetEmail())
 	if err != nil {
 		msg := fmt.Sprintf("invalid email or password: %w", err.Error())
 		return nil, status.Error(codes.InvalidArgument, msg)
@@ -112,7 +112,7 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		return nil, status.Error(codes.InvalidArgument, msg)
 	}
 
-	if err := h.repo.Update(u); err != nil {
+	if err := h.repo.Update(ctx, u); err != nil {
 		msg := fmt.Sprintf("failed to update: %w", err.Error())
 		return nil, status.Error(codes.InvalidArgument, msg)
 	}
@@ -127,12 +127,12 @@ func (h *UserHandler) GetProfile(ctx context.Context, req *pb.ProfileRequest) (*
 	if err != nil {
 		return nil, err
 	}
-	otherUser, err := h.repo.GetByUsername(req.GetUsername())
+	otherUser, err := h.repo.GetByUsername(ctx, req.GetUsername())
 	if err != nil {
 		msg := fmt.Sprintf("user not found: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
 	}
-	isFollowing, err := h.repo.IsFollowing(u, otherUser)
+	isFollowing, err := h.repo.IsFollowing(ctx, u, otherUser)
 	if err != nil {
 		msg := fmt.Sprintf("failed to get follow status: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
@@ -152,12 +152,12 @@ func (h *UserHandler) FollowUser(ctx context.Context, req *pb.FollowRequest) (*p
 		msg := fmt.Sprintf("cannot follow yourself: %w", err.Error())
 		return nil, status.Error(codes.InvalidArgument, msg)
 	}
-	otherUser, err := h.repo.GetByUsername(req.GetUsername())
+	otherUser, err := h.repo.GetByUsername(ctx, req.GetUsername())
 	if err != nil {
 		msg := fmt.Sprintf("user not found: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
 	}
-	if err := h.repo.Follow(u, otherUser); err != nil {
+	if err := h.repo.Follow(ctx, u, otherUser); err != nil {
 		msg := fmt.Sprintf("failed to follow user: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
 	}
@@ -176,12 +176,12 @@ func (h *UserHandler) UnFollowUser(ctx context.Context, req *pb.FollowRequest) (
 		msg := fmt.Sprintf("cannot unfollow yourself: %w", err.Error())
 		return nil, status.Error(codes.InvalidArgument, msg)
 	}
-	otherUser, err := h.repo.GetByUsername(req.GetUsername())
+	otherUser, err := h.repo.GetByUsername(ctx, req.GetUsername())
 	if err != nil {
 		msg := fmt.Sprintf("user not found: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
 	}
-	following, err := h.repo.IsFollowing(u, otherUser)
+	following, err := h.repo.IsFollowing(ctx, u, otherUser)
 	if err != nil {
 		msg := fmt.Sprintf("failed to get following: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
@@ -190,7 +190,7 @@ func (h *UserHandler) UnFollowUser(ctx context.Context, req *pb.FollowRequest) (
 		msg := fmt.Sprintf("user is not following the other user: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
 	}
-	if err := h.repo.Unfollow(u, otherUser); err != nil {
+	if err := h.repo.Unfollow(ctx, u, otherUser); err != nil {
 		msg := fmt.Sprintf("failed to unfollow user: %w", err.Error())
 		return nil, status.Error(codes.Aborted, msg)
 	}
@@ -203,7 +203,7 @@ func (h *UserHandler) getUser(ctx context.Context) (*model.User, error) {
 		msg := fmt.Sprintf("unauthenticated: %w", err.Error())
 		return nil, status.Error(codes.Unauthenticated, msg)
 	}
-	u, err := h.repo.GetByID(userID)
+	u, err := h.repo.GetByID(ctx, userID)
 	if err != nil {
 		msg := fmt.Sprintf("user not found: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)

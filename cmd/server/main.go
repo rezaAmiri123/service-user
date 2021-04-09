@@ -4,19 +4,24 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 
 	"github.com/rezaAmiri123/service-user/app/handler"
+	"github.com/rezaAmiri123/service-user/app/interceptors"
 	"github.com/rezaAmiri123/service-user/app/model"
 	"github.com/rezaAmiri123/service-user/app/repository"
 	"github.com/rezaAmiri123/service-user/cmd/config"
 	pb "github.com/rezaAmiri123/service-user/gen/pb"
 	"github.com/rezaAmiri123/service-user/pkg/jaeger"
 	"github.com/rezaAmiri123/service-user/pkg/logger"
+	"github.com/rezaAmiri123/service-user/pkg/metric"
 	"github.com/rezaAmiri123/service-user/pkg/mysql"
 	"github.com/rezaAmiri123/service-user/pkg/utils"
 )
@@ -45,6 +50,18 @@ func main() {
 	defer db.Close()
 	model.AutoMigrate(db)
 
+	metrics, err := metric.CreateMetrics(cfg.Metrics.URL, cfg.Metrics.ServiceName)
+	if err != nil {
+		appLogger.Errorf("CreateMetrics Error: %s", err)
+	}
+	appLogger.Info(
+		"Metrics available URL: %s, ServiceName: %s",
+		cfg.Metrics.URL,
+		cfg.Metrics.ServiceName,
+	)
+
+	im := interceptors.NewInterceptorManager(appLogger, cfg, metrics)
+
 	tracer, closer, err := jaeger.InitJaeger(cfg)
 	if err != nil {
 		appLogger.Fatal("cannot create tracer", err)
@@ -61,9 +78,17 @@ func main() {
 		appLogger.Fatal(err.Error())
 	}
 
-	srv := grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
-			grpc_recovery.UnaryServerInterceptor(),
+	srv := grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{
+		MaxConnectionIdle: cfg.Server.MaxConnectionIdle * time.Minute,
+		Timeout:           cfg.Server.Timeout * time.Second,
+		MaxConnectionAge:  cfg.Server.MaxConnectionAge * time.Minute,
+		Time:              cfg.Server.Timeout * time.Minute,
+	}),
+		grpc.UnaryInterceptor(im.Logger),
+		grpc.ChainUnaryInterceptor(
+			grpc_ctxtags.UnaryServerInterceptor(),
+			grpc_prometheus.UnaryServerInterceptor,
+			grpcrecovery.UnaryServerInterceptor(),
 		),
 	)
 

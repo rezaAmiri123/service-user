@@ -34,8 +34,8 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		Password: req.GetPassword(),
 	}
 	if err := u.Validate(); err != nil {
-		msg := fmt.Sprintf("validation error: %w", err.Error())
-		return nil, status.Error(codes.InvalidArgument, msg)
+		h.logger.Errorf("validate: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "validate %v", err)
 	}
 	if err := u.HashPassword(); err != nil {
 		msg := fmt.Sprintf("failed to hash password: %w", err.Error())

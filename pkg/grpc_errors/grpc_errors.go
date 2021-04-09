@@ -2,7 +2,7 @@ package grpc_errors
 
 import (
 	"context"
-	"database/sql"
+	"github.com/jinzhu/gorm"
 	"net/http"
 	"strings"
 
@@ -21,7 +21,7 @@ var (
 // Parse error and get code
 func ParseGRPCErrStatusCode(err error) codes.Code {
 	switch {
-	case errors.Is(err, sql.ErrNoRows):
+	case errors.Is(err, gorm.ErrRecordNotFound):
 		return codes.NotFound
 	case errors.Is(err, redis.Nil):
 		return codes.NotFound
@@ -35,7 +35,7 @@ func ParseGRPCErrStatusCode(err error) codes.Code {
 		return codes.Unauthenticated
 	case errors.Is(err, ErrInvalidSessionId):
 		return codes.PermissionDenied
-	case strings.Contains(err.Error(), "Validate"):
+	case strings.Contains(err.Error(), "validate"):
 		return codes.InvalidArgument
 	case strings.Contains(err.Error(), "redis"):
 		return codes.NotFound

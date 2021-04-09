@@ -55,7 +55,7 @@ func main() {
 	appLogger.Info("Opentracing connected")
 
 	repo := repository.NewORMUserRepository(db)
-	h := handler.NewUserHandler(repo)
+	h := handler.NewUserHandler(repo, appLogger)
 	lis, err := net.Listen("tcp", cfg.Server.Port)
 	if err != nil {
 		appLogger.Fatal(err.Error())

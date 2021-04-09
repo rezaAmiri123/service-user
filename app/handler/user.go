@@ -4,23 +4,30 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/opentracing/opentracing-go"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/rezaAmiri123/service-user/app/auth"
 	"github.com/rezaAmiri123/service-user/app/model"
 	"github.com/rezaAmiri123/service-user/app/repository"
 	pb "github.com/rezaAmiri123/service-user/gen/pb"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/rezaAmiri123/service-user/pkg/logger"
 )
 
 type UserHandler struct {
-	repo repository.UserRepository
+	repo   repository.UserRepository
+	logger logger.Logger
 }
 
-func NewUserHandler(repo repository.UserRepository) *UserHandler {
-	return &UserHandler{repo: repo}
+func NewUserHandler(repo repository.UserRepository, logger logger.Logger) *UserHandler {
+	return &UserHandler{repo: repo, logger: logger}
 }
 
 func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.UserResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Create")
+	defer span.Finish()
+
 	u := &model.User{
 		Username: req.GetUsername(),
 		Email:    req.GetEmail(),
@@ -43,6 +50,9 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 
 // LoginUser is existing user login
 func (h *UserHandler) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.Login")
+	defer span.Finish()
+
 	user, err := h.repo.GetByEmail(req.GetEmail())
 	if err != nil {
 		msg := fmt.Sprintf("invalid email or password: %w", err.Error())
@@ -62,6 +72,9 @@ func (h *UserHandler) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.
 
 // GetUser gets current user
 func (h *UserHandler) GetUser(ctx context.Context, req *pb.Empty) (*pb.UserResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.GetUser")
+	defer span.Finish()
+
 	u, err := h.getUser(ctx)
 	if err != nil {
 		return nil, err
@@ -70,6 +83,9 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.Empty) (*pb.UserRespo
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.UpdateUser")
+	defer span.Finish()
+
 	u, err := h.getUser(ctx)
 	if err != nil {
 		return nil, err
@@ -104,6 +120,9 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 }
 
 func (h *UserHandler) GetProfile(ctx context.Context, req *pb.ProfileRequest) (*pb.ProfileResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.GetProfile")
+	defer span.Finish()
+
 	u, err := h.getUser(ctx)
 	if err != nil {
 		return nil, err
@@ -122,6 +141,9 @@ func (h *UserHandler) GetProfile(ctx context.Context, req *pb.ProfileRequest) (*
 }
 
 func (h *UserHandler) FollowUser(ctx context.Context, req *pb.FollowRequest) (*pb.ProfileResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.FollowUser")
+	defer span.Finish()
+
 	u, err := h.getUser(ctx)
 	if err != nil {
 		return nil, err
@@ -143,6 +165,9 @@ func (h *UserHandler) FollowUser(ctx context.Context, req *pb.FollowRequest) (*p
 }
 
 func (h *UserHandler) UnFollowUser(ctx context.Context, req *pb.FollowRequest) (*pb.ProfileResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user.UnfollowUser")
+	defer span.Finish()
+
 	u, err := h.getUser(ctx)
 	if err != nil {
 		return nil, err
@@ -156,12 +181,12 @@ func (h *UserHandler) UnFollowUser(ctx context.Context, req *pb.FollowRequest) (
 		msg := fmt.Sprintf("user not found: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
 	}
-	following, err := h.repo.IsFollowing(u,otherUser)
-	if err != nil{
+	following, err := h.repo.IsFollowing(u, otherUser)
+	if err != nil {
 		msg := fmt.Sprintf("failed to get following: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
 	}
-	if !following{
+	if !following {
 		msg := fmt.Sprintf("user is not following the other user: %w", err.Error())
 		return nil, status.Error(codes.NotFound, msg)
 	}

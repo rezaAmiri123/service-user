@@ -14,8 +14,13 @@ type CommonConfig struct {
 
 type GatewayConfig struct {
 	Port string
+	ServerAddress string
+	ServerPort string
 }
 
+func (c *GatewayConfig)GetServerAddress()string{
+	return c.ServerAddress + c.ServerPort
+}
 type DatabaseConfig struct {
 	DBType string
 	DBUser string

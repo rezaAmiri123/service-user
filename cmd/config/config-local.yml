@@ -1,6 +1,6 @@
 server:
   AppVersion: 1.0.0
-  Port: :5000
+  Port: :6000
   PprofPort: :5555
   Mode: Development
   JwtSecretKey: secretkey
@@ -15,6 +15,11 @@ server:
   Timeout: 15
   MaxConnectionAge: 5
   Time: 120
+
+Gateway:
+  Port: :8000
+  ServerAddress: localhost
+  ServerPort: :6000
 
 logger:
   Development: true

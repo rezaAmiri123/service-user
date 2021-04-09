@@ -1,4 +1,4 @@
-           package grpc_errors
+package grpc_errors
 
 import (
 	"context"

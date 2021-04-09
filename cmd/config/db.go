@@ -17,8 +17,8 @@ func GetDB() *gorm.DB {
 
 func SetupDB(cfg *Config) *gorm.DB {
 	DBString := "%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local"
-	URL := fmt.Sprintf(DBString, cfg.DBUser, cfg.DBPass, cfg.DBHost, cfg.DBPort, cfg.DBName)
-	db, err := gorm.Open(cfg.DBType, URL)
+	URL := fmt.Sprintf(DBString, cfg.Database.DBUser, cfg.Database.DBPass, cfg.Database.DBHost, cfg.Database.DBPort, cfg.Database.DBName)
+	db, err := gorm.Open(cfg.Database.DBType, URL)
 	if err != nil {
 		logrus.Fatal("cannot connect to the database", err)
 	}

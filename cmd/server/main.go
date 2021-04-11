@@ -23,6 +23,7 @@ import (
 	"github.com/rezaAmiri123/service-user/pkg/logger"
 	"github.com/rezaAmiri123/service-user/pkg/metric"
 	"github.com/rezaAmiri123/service-user/pkg/mysql"
+	"github.com/rezaAmiri123/service-user/pkg/redis"
 	"github.com/rezaAmiri123/service-user/pkg/utils"
 )
 
@@ -50,6 +51,9 @@ func main() {
 	defer db.Close()
 	model.AutoMigrate(db)
 
+	redisClient := redis.NewRedisClient(cfg)
+	userRedis := repository.NewUserRedisRepo(redisClient, "user_", appLogger)
+
 	metrics, err := metric.CreateMetrics(cfg.Metrics.URL, cfg.Metrics.ServiceName)
 	if err != nil {
 		appLogger.Errorf("CreateMetrics Error: %s", err)
@@ -71,7 +75,7 @@ func main() {
 	defer closer.Close()
 	appLogger.Info("Opentracing connected")
 
-	repo := repository.NewORMUserRepository(db)
+	repo := repository.NewORMUserRepository(db, userRedis)
 	h := handler.NewUserHandler(repo, appLogger)
 	lis, err := net.Listen("tcp", cfg.Server.Port)
 	if err != nil {

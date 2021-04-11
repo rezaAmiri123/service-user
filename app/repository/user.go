@@ -7,6 +7,11 @@ import (
 	"github.com/opentracing/opentracing-go"
 
 	"github.com/rezaAmiri123/service-user/app/model"
+	"github.com/rezaAmiri123/service-user/pkg/utils"
+)
+
+const (
+	userByIdCacheDuration = 3600
 )
 
 type UserRepository interface {
@@ -21,11 +26,12 @@ type UserRepository interface {
 }
 
 type ORMUserRepository struct {
-	db *gorm.DB
+	db        *gorm.DB
+	cacheRepo UserCacheRepository
 }
 
-func NewORMUserRepository(db *gorm.DB) *ORMUserRepository {
-	return &ORMUserRepository{db: db}
+func NewORMUserRepository(db *gorm.DB, cacheRepo UserCacheRepository) *ORMUserRepository {
+	return &ORMUserRepository{db: db, cacheRepo: cacheRepo}
 }
 
 // Create create a user
@@ -40,6 +46,8 @@ func (repo *ORMUserRepository) Create(ctx context.Context, user *model.User) err
 func (repo *ORMUserRepository) Update(ctx context.Context, user *model.User) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.Update")
 	defer span.Finish()
+
+	repo.cacheRepo.DeleteByID(ctx, utils.UintToString(user.ID))
 
 	return repo.db.Model(user).Update(user).Error
 }
@@ -64,10 +72,18 @@ func (repo *ORMUserRepository) GetByID(ctx context.Context, id uint) (*model.Use
 	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.GetByID")
 	defer span.Finish()
 
+	cachedUser, _ := repo.cacheRepo.GetByID(ctx, utils.UintToString(id))
+	if cachedUser != nil {
+		return cachedUser, nil
+	}
+
 	var u model.User
 	if err := repo.db.Find(&u, id).Error; err != nil {
 		return nil, err
 	}
+
+	repo.cacheRepo.SetByID(ctx, utils.UintToString(u.ID), userByIdCacheDuration, &u)
+
 	return &u, nil
 }
 

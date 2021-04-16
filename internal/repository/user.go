@@ -6,7 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/opentracing/opentracing-go"
 
-	"github.com/rezaAmiri123/service-user/app/model"
+	"github.com/rezaAmiri123/service-user/internal/model"
 	"github.com/rezaAmiri123/service-user/pkg/utils"
 )
 

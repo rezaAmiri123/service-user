@@ -9,7 +9,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/opentracing/opentracing-go"
 
-	"github.com/rezaAmiri123/service-user/app/model"
+	"github.com/rezaAmiri123/service-user/internal/model"
 	"github.com/rezaAmiri123/service-user/pkg/grpc_errors"
 	"github.com/rezaAmiri123/service-user/pkg/logger"
 )

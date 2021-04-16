@@ -8,10 +8,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/rezaAmiri123/service-user/app/auth"
-	"github.com/rezaAmiri123/service-user/app/model"
-	"github.com/rezaAmiri123/service-user/app/repository"
 	pb "github.com/rezaAmiri123/service-user/gen/pb"
+	"github.com/rezaAmiri123/service-user/internal/auth"
+	"github.com/rezaAmiri123/service-user/internal/model"
+	"github.com/rezaAmiri123/service-user/internal/repository"
 	"github.com/rezaAmiri123/service-user/pkg/logger"
 )
 

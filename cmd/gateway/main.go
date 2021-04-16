@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"github.com/rezaAmiri123/service-user/pkg/utils"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rezaAmiri123/service-user/cmd/config"
 	pb "github.com/rezaAmiri123/service-user/gen/pb"
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
+	"github.com/rezaAmiri123/service-user/pkg/utils"
 )
 
 func run(cfg *config.Config) error {

@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"github.com/rezaAmiri123/service-user/pkg/utils"
 	"regexp"
 
 	validation "github.com/go-ozzo/ozzo-validation"
@@ -58,7 +59,7 @@ func (u *User) CheckPassword(plain string) bool {
 // ProtoUser return user proto
 func (u *User) ProtoUser() *pb.UserResponse {
 	return &pb.UserResponse{
-		Id:       uint64(u.ID),
+		Id:       utils.UintToString(u.ID),
 		Email:    u.Email,
 		Username: u.Username,
 	}
